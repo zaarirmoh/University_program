@@ -13,6 +13,7 @@
 #include <iterator>
 #include <ios>
 #include <iomanip>
+#include <fstream>
 using namespace std ;
 //********************************************
 // todo : declaring the structure
@@ -295,8 +296,8 @@ void Delete_university (university_r& univer , string name){
     delete univer_z ;
     univer_z = nullptr ;
 };
-void Delete_all (university_r univer){
-
+void Delete_all (university_r& univer){
+    while (univer) Delete_university(univer,univer->name) ;
 };
 //***********************************************************************************************************
 // todo : Procedure that writes down the whole structrure :
@@ -339,6 +340,108 @@ void Display (University* univer){
     };
 };
 //***********************************************************************************************************
+// todo : Save the structure to a file :
+void Save_structure (University* univer , string file_name) {
+    University* univer_x {univer} ;
+    ofstream file_delete(file_name, ofstream::out | ofstream::trunc);
+    if (file_delete.is_open()) {
+        file_delete.close();
+    };
+    fstream file ;
+    file.open(file_name) ;
+    if (file.is_open()){
+        while (univer_x){
+            file << " | " << univer_x->name ;
+            Faculty* fac_x {univer_x->fac} ;
+            while (fac_x){
+                file << " : " << fac_x->name ;
+                Department* dep_x { fac_x->dep } ;
+                while (dep_x){
+                    file << " , " << dep_x->name ;
+                    Speciality* spec_x { dep_x->spec } ;
+                    while (spec_x){
+                        file << " ; " << spec_x->name ;
+                        Year* year_x { spec_x->yeare } ;
+                        while (year_x){
+                            file << " . " << to_string(year_x->yeare) ;
+                            Student* stud_x { year_x->stud } ;
+                            while (stud_x){
+                                file << " / " << stud_x->Last_name
+                                     << " " << stud_x->First_name ;
+                                stud_x = stud_x->next ;
+                            };
+                            year_x = year_x->next ;
+                        };
+                        spec_x = spec_x->next ;
+                    };
+                    dep_x = dep_x->next ;
+                };
+                fac_x = fac_x->next ;
+            };
+            univer_x = univer_x->next ;
+        };
+        file << " *Exit*" ;
+    };
+    file.close() ;
+};
+// todo : Get the previous structure :
+void Get_structure (university_r& univer , string file_name){
+    string s = "*Exit*" ;
+    University* univer_x { nullptr } ;
+    Faculty* fac_x {nullptr} ;
+    Department* dep_x {nullptr} ;
+    Speciality* spec_x {nullptr} ;
+    Year* year_x {nullptr} ;
+    Student* stud_x {nullptr} ;
+    fstream file ;
+    file.open(file_name) ;
+    if ( file.is_open() ){
+        file >> s ;
+        while ( s != "*Exit*" ){
+            if ( s == "|"){
+                file >> s ;
+                univer_x = new University ;
+                univer_x->name = s ;
+                univer_x->next = univer ;
+                univer = univer_x ;
+            }else if ( s == ":"){
+                file >> s ;
+                fac_x = new Faculty ;
+                fac_x->name = s ;
+                fac_x->next = univer->fac ;
+                univer->fac = fac_x ;
+            }else if ( s == ","){
+                file >> s ;
+                dep_x = new Department ;
+                dep_x->name = s ;
+                dep_x->next = fac_x->dep ;
+                fac_x->dep = dep_x ;
+            }else if ( s == ";"){
+                file >> s ;
+                spec_x = new Speciality ;
+                spec_x->name = s ;
+                spec_x->next = dep_x->spec ;
+                dep_x->spec = spec_x ;
+            }else if (s == "."){
+                file >> s ;
+                year_x = new Year ;
+                year_x->yeare = stoi(s) ;
+                year_x->next = spec_x->yeare ;
+                spec_x->yeare = year_x ;
+            }else if (s == "/"){
+                file >> s ;
+                stud_x = new Student ;
+                stud_x->Last_name = s ;
+                file >> s ;
+                stud_x->First_name = s ;
+                stud_x->next = year_x->stud ;
+                year_x->stud = stud_x ;
+            };
+            file >> s ;
+        };
+    };
+};
+//***********************************************************************************************************
 int main () {
     int choose {} ;
     string name , name1 ;
@@ -349,6 +452,8 @@ int main () {
     Speciality* spec_y{nullptr} ;
     Year* year_y{nullptr} ;
     Student* stud_y{nullptr} ;
+    Get_structure(univer,"Structure.txt") ;
+    if (!univer) cout << "it did not work \n" ;
     do
     {
         cout << setw(50) << setfill('-') << '\n' ;
@@ -369,6 +474,7 @@ int main () {
              << "15 : Delete a given Student\n"
              << "16 : Sort the Students of a certain year by last name\n"
              << "17 : write down the whole structrue\n" 
+             << "18 : Delete everything\n"
              << "00 : Exit the program\n" ;
         cout << setw(75) << setfill('-') << '\n' ;
         cout << "Choose one of the operations above :\n" ;
@@ -795,10 +901,17 @@ int main () {
             };
         };
             break;
-        case 16:
+        case 16:{
+
+        }
             break;
         case 17:{
             Display (univer) ;
+        };
+            break;
+        case 18:{
+            Delete_all(univer) ;
+            cout << "Everything was deleted successfully!\n" ;
         };
             break;
         default:
@@ -807,9 +920,11 @@ int main () {
     } while ( choose != 0);
     cout << "Do you want to save the changes ?\n"
          << "1: Save\n"
-         << "2: Discard,delete everything\n" ;
+         << "2: Discard\n" ;
     cin >> choose ;
-    if (choose == 2) Delete_all (univer) ;
-
+    if (choose == 1) {
+        Save_structure(univer ,"Structure.txt") ;
+        cout << "The structure has been saved successfully!\n" ;
+    };
     return 0 ;
 }
