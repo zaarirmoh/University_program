@@ -442,6 +442,29 @@ void Get_structure (university_r& univer , string file_name){
     };
 };
 //***********************************************************************************************************
+// todo : sort student of a given year by last name
+void Sort_student (Speciality* spec , int n){
+    Year* year {spec->yeare} ;
+    int i = n ;
+    while (i-1 != 0){
+        year = year->next ;
+        i-- ;
+    };
+    Student* stud{year->stud} ;
+    Student* stop{nullptr} ;
+    while (stud != stop){
+        Student* stud_x{stud} ;
+        while (stud_x->next!= stop){
+            if (stud_x->Last_name > stud_x->next->Last_name){
+                string s = stud_x->Last_name ;
+                stud_x->Last_name = stud_x->next->Last_name ;
+                stud_x->next->Last_name = s ;
+            };
+            stud_x = stud_x->next ;
+        }
+        stop = stud_x ;
+    };
+};
 int main () {
     int choose {} ;
     string name , name1 ;
@@ -499,6 +522,7 @@ int main () {
                      << "2 : No,return\n";
                 cin >> choose ;
                 if (choose == 1) goto another_name2 ;
+                else choose = 3 ;
             }else{
                 cout << "Enter the name of the faculty :\n" ;
                 cin >> name ;
@@ -902,8 +926,44 @@ int main () {
         };
             break;
         case 16:{
-
-        }
+            cout << "Enter the university :\n" ;
+            cin >> name ;
+            univer_y = Search_University(univer , name) ;
+            if (!univer_y){
+                cout << "The univerity does not exist\n" ;
+            }else{
+                cout << "Enter the faculty :\n" ;
+                cin >> name ;
+                fac_y = Search_Faculty(univer_y,name) ;
+                if (!fac_y){
+                    cout << "Faculty does not exist\n" ;
+                }else{
+                    cout << "Enter the department\n" ;
+                    cin >> name ;
+                    dep_y = Search_Department(fac_y,name) ;
+                    if (!dep_y){
+                        cout << "Department does not exist\n" ;
+                    }else{
+                        cout << "Enter the speciality\n" ;
+                        cin >> name ;
+                        spec_y = Search_speciality(dep_y,name) ;
+                        if (!spec_y){
+                            cout << "The speciality does not exist\n" ;
+                        }else{
+                            cout << "Enter the year\n" ;
+                            cin >> choose ;
+                            if (choose < 1 || choose > 5 ){
+                                cout << "Year not valid\n" ;
+                                choose = 6 ;
+                            }else{
+                                Sort_student(spec_y,choose) ;
+                                cout << "The students have been sorted successfully\n" ;
+                            };
+                        };
+                    };
+                };
+            };
+        };
             break;
         case 17:{
             Display (univer) ;
